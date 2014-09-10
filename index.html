@@ -1,0 +1,64 @@
+<html ng-app="net.enzey.examples">
+	<head>
+        <!--script src="https://code.jquery.com/jquery-1.11.0.min.js"></script-->
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.8/angular.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.0-beta.8/angular-animate.js"></script>
+        <script src="https://code.angularjs.org/1.3.0-beta.8/i18n/angular-locale_en.js"></script>
+
+		<script src="dist/DatePicker.js"></script>
+		<script src="example.js"></script>
+
+		<link  href="dist/DatePicker.css" rel="stylesheet" type="text/css"></link>
+		<link  href="dist/DatePicker-animations.css" rel="stylesheet" type="text/css"></link>
+		<style>
+			 *, *:before, *:after {
+			  -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+			 }
+		</style>
+
+		<style>
+.flexContainer {
+    display: flex;
+}
+.flexContainer * {
+	flex: 1 1 155px;
+	min-width: 150px;
+}
+.move {
+  animation-duration: 3s;
+  animation-name: slidein;
+}
+
+@keyframes slidein {
+  from {
+    margin-left: 100%;
+    width: 300%; 
+  }
+
+  to {
+    margin-left: 0%;
+    width: 100%;
+  }
+}
+		</style>
+	</head>
+	<body>
+
+		<div ng-controller="datePickerExample">
+			<h2>Date Picker</h2>
+			<h4>Angular Watch Count: {{watchCount}}</h4>
+			<p>Pure angular, no dependencies, supports translations of months and days via angular-locale files.</p>
+			<p>Need a way to go to a specific month / year.</p>
+			<p>Need a way to jump back to today and the selected date.</p>
+			<p>scroll in the dates to navigate</p>
+			<p>The UX is missing something but I'm not sure what yet.</p>
+			<div nz-date-picker ng-model="selectedDate"></div>
+<span>Selected Date: {{selectedDate}}</span>
+			<div style="height: 60px;"></div>
+
+</BR>
+</BR>
+
+		</div>
+	</body>
+</html>
