@@ -2,13 +2,13 @@
 	var module = angular.module('net.enzey.datepicker', ['ngAnimate']);
 	var selectedMonthPrefix = 'selectedMonth';
 
-	module.filter('nzMonthName', function ($locale) {
+	module.filter('nzMonthName', ['$locale', function ($locale) {
 		return function (key, p) {
 			return $locale.DATETIME_FORMATS.MONTH[key];
 		}
-	});
+	}]);
 
-	module.directive('nzDatePicker', function($parse, $timeout, $locale, $animate) {
+	module.directive('nzDatePicker', ['$parse', '$timeout', '$locale', '$animate', function($parse, $timeout, $locale, $animate) {
 		return {
 			scope: {},
 			restrict: 'AE',
@@ -57,7 +57,7 @@
 						</div>\
 						';
 			},
-			controller: function ($scope) {
+			controller: ['$scope', function ($scope) {
 				var dayInMS = 24 * 60 * 60 * 1000;
 				var weekInMS = 7 * dayInMS;
 				// Taking into account leap years.
@@ -162,7 +162,7 @@
 					week.isStripped = !lastWeek.isStripped;
 					$scope.weeks.push(week);
 				};
-			},
+			}],
 			compile: function ($element, $attrs) {
 				$element.addClass('nzDatePicker');
 
@@ -264,9 +264,9 @@
 				};
 			}
 		};
-	});
+	}]);
 
-	module.directive('nzWeekTemplate', function($parse, $compile) {
+	module.directive('nzWeekTemplate', ['$parse', '$compile', function($parse, $compile) {
 		return {
 			restrict: 'AE',
 			compile: function ($element, $attrs) {
@@ -301,7 +301,7 @@
 				};
 			}
 		};
-	});
+	}]);
 
 
 })(angular);

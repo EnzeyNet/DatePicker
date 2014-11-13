@@ -1,7 +1,7 @@
 module.exports = function (grunt) {
 
 	var matchdep = require('matchdep'); // dependencies from package
-	var repoLocation = /(https:\/\/github.com)(.*)/.exec(grunt.file.read('.git/config'))[0];	
+	var repoLocation = /(https:\/\/github.com)(.*)/.exec(grunt.file.read('.git/config'))[0];
 	var srcdir = 'src';
 	var distdir = 'dist';
 
@@ -12,6 +12,12 @@ module.exports = function (grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		distdir: distdir,
 		projectName: projectName,
+		curl: {
+			update_template: {
+				src: 'https://github.com/EnzeyNet/GitHub-Project-Template/archive/master.zip',
+				dest: 'update/master.zip'
+			}
+		},
 		karma: {
 			unit: {
 				configFile: 'karma.conf.js',
@@ -33,7 +39,7 @@ module.exports = function (grunt) {
 		uglify: {
 			production: {
 				files: {
-					'<%= distdir %>/<%= projectName %>.min.js': [srcdir + '/**/*.js']
+					'<%= distdir %>/<%= projectName %>.min.js': ['<%= distdir %>/<%= projectName %>.js']
 				}
 			}
 		},
@@ -70,6 +76,16 @@ module.exports = function (grunt) {
 				}
 			}
 		},
+		ngAnnotate: {
+			options: {
+				singleQuotes: true,
+			},
+			app1: {
+				files: {
+					'<%= distdir %>/<%= projectName %>.js': ['<%= distdir %>/<%= projectName %>.js']
+				},
+			}
+		},
 		clean: ['<%= distdir %>', 'gh-pages']
 	});
 	matchdep.filterDev('grunt-*').forEach(grunt.loadNpmTasks);
@@ -92,12 +108,20 @@ module.exports = function (grunt) {
 	});
 
 	grunt.registerTask('all', ['get-dependencies', 'buildDev', 'buildProd', 'test']);
-	grunt.registerTask('buildDev', ['concat', 'less:dev']);
-	grunt.registerTask('buildProd', ['uglify', 'less:production']);
+	grunt.registerTask('buildDev', ['concat', 'less:dev', 'purgeEmptyFiles']);
+	grunt.registerTask('buildProd', ['buildDev', 'ngAnnotate', 'uglify', 'less:production', 'purgeEmptyFiles']);
 	grunt.registerTask('test', ['karma:unit']);
 
 	grunt.registerTask('build-examples', 'Build gh-pages branch of examples.', function() {
 		grunt.task.run('buildDev', 'buildProd', 'update-examples', 'update-examples-dist');
+	});
+
+	grunt.registerTask('purgeEmptyFiles', function() {
+		grunt.file.recurse(distdir, function(abspath, rootdir, subdir, filename) {
+			if (grunt.file.read(abspath).length === 0) {
+				grunt.file.delete(abspath);
+			}
+		});
 	});
 
 	grunt.registerTask('update-examples', function() {
