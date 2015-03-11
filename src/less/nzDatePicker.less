@@ -12,122 +12,181 @@
 .selectedMonth11 [month="11"],
 .selectedMonth12 [month="12"]{
 	color: blue; /* orangered */
-	background-color: rgba(0, 64, 190, .2);
+	background-color: rgba(0, 64, 190, .16);
+	transition: background-color 0.5s ease, color 0.5s ease;
 }
 .nzDatePicker {
 	display: inline-block;
-}
-.nzDatePicker .day:hover {
-	background-color: lightblue;
-}
-.viewingWeek {
-	background-color: rgba(0, 64, 190, .2);
-}
-.nzDatePicker .monthScroller > *,
-.nzDatePicker .weekPosition > * {
-	flex-grow: 1;
-	flex-shrink: 1;
-}
-.nzDatePicker .monthScroller > * {
-	background-color: transparent;
-}
-.nzDatePicker .monthScroller {
-	align-content: flex-start;
-    align-items: flex-end;
-    display: flex;
-    flex-flow: column nowrap;
-}
-.nzDatePicker .weekPosition {
-    display: flex;
-	position: absolute;
-    flex-flow: column nowrap;
-	top: 0;
-	left: 0;
-	height: 100%;
-	width: 100%;
+
+	td {
+		height: 0;
+	}
+	ul {
+		height: 100%;
+		margin: 0;
+		padding: 0;
+		list-style-type: none;
+	}
+
+	table {
+		white-space: inherit;
+		line-height: inherit;
+		font-weight: inherit;
+		font-size: inherit;
+		font-variant: inherit;
+		font-style: inherit;
+		color: inherit;
+		text-align: inherit;
+	}
+	table {
+		color: #989898;
+	}
+
+	.currentMonthYear {
+		display: flex;
+		flex-direction: row;
+		justify-content: space-around;
+		font-size: 1.8em;
+		margin: 0;
+	}
+
+	.monthScroller,
+	.weekPosition,
+	.controls {
+		display: flex;
+		flex-flow: column nowrap;
+	}
+
+	.positionViewport {
+		position: relative;
+
+		.monthScroller {
+			// Needed to bring the months above the weeks viewport
+			position: relative;
+
+			justify-content: space-around;
+			text-align: right;
+
+			> * {
+				background-color: transparent;
+			}
+		}
+
+		.weekPosition {
+			position: absolute;
+			top: 0;
+			left: 0;
+			height: 100%;
+			width: 100%;
+
+			 > * {
+				flex: 1 1 auto;
+			}
+
+			.viewingWeek {
+				background-color: rgba(0, 64, 190, .16);
+			}
+		}
+
+	}
+
+	.controls {
+		justify-content: space-between;
+		font-size: 1.8em;
+
+		.prevYear:before {
+			content: "\21A5";
+		}
+		.prevMonth:before {
+			content: "\219F";
+		}
+		.prevWeek:before {
+			content: "\21E1";
+		}
+		.nextWeek:before {
+			content: "\21E3";
+		}
+		.nextMonth:before {
+			content: "\21A1";
+		}
+		.nextYear:before {
+			content: "\21A7";
+		}
+	}
+
+	.header {
+		display: flex;
+		flex-flow: row nowrap;
+
+		* {
+			width: 0;
+			flex: 1 1 auto;
+			border: none;
+			padding-bottom: 1px;
+			padding-top: 0.4em;
+			color: #353535;
+			background-color: transparent;
+			cursor: default;
+		}
+	}
+
+	.picker {
+		display: inline-table;
+		border-collapse: collapse;
+		
+		.nzDatePickerRow {
+
+			&.stripe {
+				background-color: rgba(0, 0, 0, .07);
+			}
+		}
+
+		.day {
+			border-color: black;
+			border-width: 1px;
+			border-style: solid;
+			cursor: pointer;
+			width: 2.3em;
+			height: inherit;
+			height: 2.3em;
+			display: table-cell;
+			text-align: center;
+			vertical-align: middle;
+
+			* {
+				display: block;
+			}
+
+			&.selected {
+				background-color: lightgreen;
+			}
+
+			&:hover {
+				background: lightblue;
+			}
+		}
+
+		.today > * {
+			border-radius: 100%;
+			-webkit-box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75);
+			-moz-box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75);
+			box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75); 
+		}
+
+	}
 }
 
-.nzDatePicker .picker {
-	display: inline-table;
-	border-collapse: collapse;
-	border-bottom: 1px solid black;
-}
-
-.nzDatePicker td {
-	position: relative;
-}
-.nzDatePicker ul {
-    margin: 0;
-    padding: 0;
-	list-style-type: none;
-}
-
-.nzDatePicker .header td {
-    border: none;
-    padding-bottom: 1px;
-    padding-top: 0.4em;
-	color: #353535;
-	background-color: transparent;
-	cursor: default;
-}
-
-.nzDatePicker .month,
-.nzDatePicker .year {
-	font-size: 1.8em;
-	margin: 0 1em;
-	display: inline-block;
-	text-align: center;
-}
-
-.nzDatePicker .day.selected {
-	background-color: lightgreen;
-}
-
-.nzDatePicker .stripe {
-	background-color: rgba(0, 0, 0, .07);
-}
-
-.nzDatePicker table {
-	color: #989898;
-}
-.nzDatePicker .day {
-	border-color: black;
-	border-width: 1px;
-	border-style: solid;
-	cursor: pointer;
-	width: 2.3em;
-	height: inherit;
-	display: table-cell;
-    text-align: center;
-    vertical-align: middle;
-}
-.nzDatePicker .day * {
-	display: block;
-}
-
-.nzDatePicker .today > * {
-	border-radius: 100%;
-    -webkit-box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75);
-    -moz-box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75);
-    box-shadow: 0px 0px 15px 5px rgba(255, 255, 190, .75); 
-}
-
-.nzDatePickerRow {
-	overflow: hidden;
-}
-.nzDatePickerRow  {
-	height: 2.3em;
-}
-
-.nzDatePickerRow.ng-leave {
+/*
+.nzDatePicker .nzDatePickerRow.ng-leave {
   -webkit-animation:0.4s shrink;
   -moz-animation:0.4s shrink;
   -o-animation:0.4s shrink;
   animation:0.4s shrink;
 }
-.nzDatePickerRow.ng-enter {
+.nzDatePicker .nzDatePickerRow.ng-enter {
   -webkit-animation:0.4s grow;
   -moz-animation:0.4s grow;
   -o-animation:0.4s grow;
   animation:0.4s grow;
 }
+*/
