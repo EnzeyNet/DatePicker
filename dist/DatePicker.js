@@ -2,13 +2,13 @@
 	var module = angular.module('net.enzey.datepicker', ['ngAnimate']);
 	var selectedMonthPrefix = 'selectedMonth';
 
-	module.filter('nzMonthName', function ($locale) {
+	module.filter('nzMonthName', ['$locale', function ($locale) {
 		return function (key, p) {
 			return $locale.DATETIME_FORMATS.MONTH[key];
 		}
-	});
+	}]);
 
-	module.directive('nzDatePicker', function($parse, $timeout, $locale, $animate) {
+	module.directive('nzDatePicker', ['$parse', '$timeout', '$locale', '$animate', function($parse, $timeout, $locale, $animate) {
 		return {
 			scope: {},
 			restrict: 'AE',
@@ -16,7 +16,7 @@
 				var headers = '';
 				var shortDayNames = $locale.DATETIME_FORMATS.SHORTDAY;
 				shortDayNames.forEach(function(shortName) {
-					headers += '<span>' + shortName + '</span>';
+					headers += '<div>' + shortName + '</div>';
 				});
 
 				var months = '';
@@ -31,9 +31,9 @@
 				};
 				
 				return '\
-						<div>\
-							<div class="month">{{currentMonth-1 | nzMonthName}}</div>\
-							<div class="year">{{currentYear}}</div>\
+						<div class="currentMonthYear">\
+							<span class="month">{{currentMonth-1 | nzMonthName}}</span>\
+							<span class="year">{{currentYear}}</span>\
 						</div>\
 						<div>\
 							<table>\
@@ -42,14 +42,24 @@
 									<th class="header">' + headers + '</th>\
 								</tr>\
 								<tr>\
-									<td>\
+									<td class="positionViewport">\
 										<ul class="weekPosition">' + yearWeeks + '</ul>\
 										<ul class="monthScroller">' + months + '</ul>\
 									</td>\
 									<td>\
-										<ul class="picker">\
-											<li ng-repeat="week in weeks" nz-week-template="week" class="nzDatePickerRow" ng-animate="\'nzDatePickerRow\'">\
-											</li>\
+										<div class="picker">\
+											<div ng-repeat="week in weeks" nz-week-template="week" class="nzDatePickerRow" ng-animate="\'nzDatePickerRow\'">\
+											</div>\
+										</div>\
+									</td>\
+									<td>\
+										<ul class="controls">\
+											<li class="prevYear"  ng-click="renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevMonth();renderPrevWeek();updateCenteredMonth();"></li>\
+											<li class="prevMonth" ng-click="renderPrevMonth();renderPrevWeek();updateCenteredMonth();"></li>\
+											<li class="prevWeek"  ng-click="renderPrevWeek();updateCenteredMonth();"></li>\
+											<li class="nextWeek"  ng-click="renderNextWeek();updateCenteredMonth();"></li>\
+											<li class="nextMonth" ng-click="renderNextMonth();renderNextWeek();updateCenteredMonth();"></li>\
+											<li class="nextYear"  ng-click="gotoNextYear()"></li>\
 										</ul>\
 									</td>\
 								</tr>\
@@ -57,7 +67,7 @@
 						</div>\
 						';
 			},
-			controller: function ($scope) {
+			controller: ['$scope', function ($scope) {
 				var dayInMS = 24 * 60 * 60 * 1000;
 				var weekInMS = 7 * dayInMS;
 				// Taking into account leap years.
@@ -68,10 +78,10 @@
 					};
 				};
 				$scope.getWeek = function (date) {
-				var onejan = new Date(date.getFullYear(),0,1);
+				var onejan = new Date(date.getUTCFullYear(),0,1);
 				// First day of the calender
 				var dayOffset = 0;
-				return Math.ceil((((date - onejan) / 86400000) + onejan.getDay() + dayOffset)/7);
+				return Math.ceil((((date - onejan) / 86400000) + onejan.getUTCDay() + dayOffset)/7);
 				};
 				var toNumber = function(n) {
 					n = +n;
@@ -82,7 +92,7 @@
 				};
 				$scope.removeTimeFromDate = function(date) {
 					var time = date.getTime();
-					return new Date(time - (time % dayInMS) + 1);
+					return new Date(time - (time % dayInMS));
 				};
 				$scope.addDay = function(date, n) {
 					return new Date(date.getTime() + (dayInMS * toNumber(n)));
@@ -92,7 +102,7 @@
 				};
 
 				$scope.getBeginningOfWeek = function(date) {
-					return new Date( date.getTime() - (dayInMS * date.getDay()) );
+					return new Date( date.getTime() - (dayInMS * date.getUTCDay()) );
 				};
 				$scope.generateWeek = function(startDate) {
 					startDate = $scope.getBeginningOfWeek(startDate);
@@ -108,9 +118,9 @@
 					var weeks = [];
 					startDate = $scope.getBeginningOfWeek(startDate);
 					startDate = $scope.addDay(startDate, -1);
-					var startMonth = startDate.getMonth();
+					var startMonth = startDate.getUTCMonth();
 					var week;
-					while ( (week = $scope.generateWeek(startDate))[6].date.getMonth() === startMonth) {
+					while ( (week = $scope.generateWeek(startDate))[6].date.getUTCMonth() === startMonth) {
 						weeks.push(week);
 						startDate = $scope.addDay(week[0].date, -1);
 					}
@@ -120,9 +130,9 @@
 					var weeks = [];
 					startDate = $scope.getBeginningOfWeek(startDate);
 					startDate = $scope.addDay(startDate, 7);
-					var startMonth = startDate.getMonth();
+					var startMonth = startDate.getUTCMonth();
 					var week;
-					while ( (week = $scope.generateWeek(startDate))[0].date.getMonth() === startMonth) {
+					while ( (week = $scope.generateWeek(startDate))[0].date.getUTCMonth() === startMonth) {
 						weeks.push(week);
 						startDate = $scope.addDay(week[6].date, 1);
 					}
@@ -134,47 +144,76 @@
 				$scope.lastRenderedDay = function() {
 					return $scope.weeks[ $scope.weeks.length-1 ][6];
 				};
-				$scope.renderPrevMonth = function() {
+				$scope.renderPrevMonth = function(skipRemoval) {
 					var weeks = $scope.generatePrevMonth($scope.firstRenderedDay().date);
 					weeks.forEach(function(week) {
 						var firstWeek = $scope.weeks[0];
 						week.isStripped = !firstWeek.isStripped;
 						$scope.weeks.unshift(week)
+						if (!skipRemoval) {
+							$scope.weeks.pop();
+						}
 					});
 				};
-				$scope.renderNextMonth = function() {
+				$scope.renderNextMonth = function(skipRemoval) {
 					var weeks = $scope.generateNextMonth($scope.lastRenderedDay().date);
 					weeks.forEach(function(week) {
 						var lastWeek = $scope.weeks[$scope.weeks.length-1];
 						week.isStripped = !lastWeek.isStripped;
 						$scope.weeks.push(week)
-					});;
+						if (!skipRemoval) {
+							$scope.weeks.shift();
+						}
+					});
 				};
-				$scope.renderPrevWeek = function() {
+				$scope.renderPrevWeek = function(skipRemoval) {
 					var week = $scope.generateWeek( $scope.addDay($scope.firstRenderedDay().date, -1));
 					var lastWeek = $scope.weeks[0];
 					week.isStripped = !lastWeek.isStripped;
 					$scope.weeks.unshift(week);
+					if (!skipRemoval) {
+						$scope.weeks.pop();
+					}
 				};
-				$scope.renderNextWeek = function() {
+				$scope.renderNextWeek = function(skipRemoval) {
 					var week = $scope.generateWeek( $scope.addDay($scope.lastRenderedDay().date, 1));
 					var lastWeek = $scope.weeks[$scope.weeks.length-1];
 					week.isStripped = !lastWeek.isStripped;
 					$scope.weeks.push(week);
+					if (!skipRemoval) {
+						$scope.weeks.shift();
+					}
 				};
-			},
+
+			}],
 			compile: function ($element, $attrs) {
 				$element.addClass('nzDatePicker');
 
 				return {
 					pre: function(scope, element, attrs) {
 						scope.ngModel = attrs.ngModel;
-						var selection = $parse(attrs.ngModel)(scope);
+						var selection = $parse(attrs.ngModel)(scope.$parent);
 						if (!selection) {
 							selection = new Date();
 						}
 						selection = scope.removeTimeFromDate(selection);
 
+						scope.gotoNextYear = function() {
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextMonth();
+							scope.renderNextWeek();
+							scope.updateCenteredMonth();
+						};
 						scope.$parent.$watch(attrs.ngModel, function(newVal, oldVal) {
 							if (newVal && oldVal) {
 								var timelessDate = scope.removeTimeFromDate(newVal);
@@ -195,7 +234,17 @@
 								element.removeClass(selectedMonthPrefix + i);
 							}
 							element.addClass(selectedMonthPrefix + monthIndex);
+							element.addClass(selectedMonthPrefix + monthIndex);
 							scope.currentMonth = monthIndex;
+						};
+
+						scope.updateCenteredMonth = function() {
+							var centerWeek = Math.floor(scope.weeks.length / 2);
+							var selectedMonth = scope.weeks[centerWeek][0].date.getUTCMonth() + 1;
+							if (selectedMonth > 12) {selectedMonth = 1;}
+							if (selectedMonth < 1) {selectedMonth = 12;}
+							scope.selectMonth(selectedMonth);
+							scope.currentYear = scope.weeks[3][0].date.getUTCFullYear();
 						};
 
 						angular.element(element[0].querySelector('.picker')).on('DOMMouseScroll mousewheel', function (event) {
@@ -206,18 +255,11 @@
 							}
 							if (movement < 0) {
 								scope.renderNextWeek();
-								scope.weeks.shift();
 							} else {
 								scope.renderPrevWeek();
-								scope.weeks.pop();
 							}
-							console.log(scope.weeks.length);
-							var centerWeek = Math.floor(scope.weeks.length / 2);
-							var selectedMonth = scope.weeks[centerWeek][0].date.getMonth() + 1;
-							if (selectedMonth > 12) {selectedMonth = 1;}
-							if (selectedMonth < 1) {selectedMonth = 12;}
-							scope.selectMonth(selectedMonth);
-							scope.currentYear = scope.weeks[3][0].date.getFullYear();
+
+							scope.updateCenteredMonth();
 							scope.$apply();
 						});
 
@@ -225,27 +267,17 @@
 						scope.weeks = [];
 						var thisWeek = scope.generateWeek(firstOfWeek);
 						scope.weeks.push( thisWeek );
-						scope.renderPrevMonth();
-						scope.renderNextMonth();
-						scope.renderNextWeek();
-						scope.renderPrevWeek();
-						if (scope.weeks[0][0].date.getMonth() === scope.weeks[0][6].date.getMonth()) {
-							scope.weeks.unshift();
-						}
-						if (scope.weeks[scope.weeks.length-1][0].date.getMonth() === scope.weeks[scope.weeks.length-1][6].date.getMonth()) {
-							scope.weeks.pop();
-						}
+						scope.renderNextWeek(true);
+						scope.renderNextWeek(true);
+						scope.renderNextWeek(true);
+						scope.renderPrevWeek(true);
+						scope.renderPrevWeek(true);
+						scope.renderPrevWeek(true);
 
-						scope.selectMonth(firstOfWeek.getMonth()+1);
+						scope.updateCenteredMonth();
 					},
 					post: function (scope, element, attrs) {
-						scope.currentYear = scope.weeks[3][0].date.getFullYear();
-						$timeout(function() {
-							var monthSelection = angular.element(element[0].querySelector('.monthScroller'));
-							var picker = angular.element(element[0].querySelector('.picker'));
-							monthSelection.css('height', picker[0].clientHeight);
-							picker.css('height', picker[0].clientHeight);
-						}, 0, false);
+						scope.currentYear = scope.weeks[3][0].date.getUTCFullYear();
 						scope.$watchCollection('weeks', function(newArray) {
 							var weeksOfYear = angular.element(element[0].querySelector('.weekPosition')).children();
 							weeksOfYear.removeClass('viewingWeek');
@@ -264,9 +296,9 @@
 				};
 			}
 		};
-	});
+	}]);
 
-	module.directive('nzWeekTemplate', function($parse, $compile) {
+	module.directive('nzWeekTemplate', ['$parse', '$compile', function($parse, $compile) {
 		return {
 			restrict: 'AE',
 			compile: function ($element, $attrs) {
@@ -284,16 +316,13 @@
 						weekModel.forEach(function(day) {
 							var dayScope = scope.$new();
 							dayScope = angular.extend(dayScope, day);
-							var month = day.date.getMonth() + 1;
-							var dayElem = $compile('<div class="day" ng-click="setDate(date, $event)" month="' + month + '"><span>' + day.date.getDate() + '</span></div>')(dayScope);
+							var month = day.date.getUTCMonth() + 1;
+							var dayElem = $compile('<div class="day" ng-click="setDate(date, $event)" month="' + month + '"><span>' + day.date.getUTCDate() + '</span></div>')(dayScope);
 							if (selectedDate && selectedDate.getTime() === day.date.getTime()) {
 								dayElem.addClass('selected');
 							}
 							element.append( dayElem );
 						});
-						if (scope.getWeek(weekModel[0].date) !== scope.getWeek(weekModel[6].date)) {
-						console.log( 'First: ' + scope.getWeek(weekModel[0].date) + ' Last: ' + scope.getWeek(weekModel[6].date));
-						}
 					},
 					post: function (scope, element, attrs) {
 						
@@ -301,7 +330,7 @@
 				};
 			}
 		};
-	});
+	}]);
 
 
 })(angular);
